@@ -16,15 +16,30 @@ type City struct {
 	Population int32  `json:"population,omitempty"`
 }
 
-var cities []City
+var cities = []City{
+	{
+		ID:         "01",
+		Name:       "Medellín",
+		State:      "Antioquia",
+		Country:    "Colombia",
+		Population: 3731447,
+	},
+	{
+		ID:         "02",
+		Name:       "Boston",
+		State:      "Massachusetts",
+		Country:    "United States",
+		Population: 685094,
+	},
+}
 
 func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/cities", GetCities).Methods("GET")
-	router.HandleFunc("/city/{id}", GetCity).Methods("GET")
-	router.HandleFunc("/city/{id}", CreateCity).Methods("POST")
-	router.HandleFunc("/city/{id}", DeleteCity).Methods("DELETE")
+	router.HandleFunc("/cities/{id}", GetCity).Methods("GET")
+	router.HandleFunc("/cities", CreateCity).Methods("POST")
+	router.HandleFunc("/cities/{id}", DeleteCity).Methods("DELETE")
 
 	log.Print("Probando")
 	http.ListenAndServe(":8000", router)
@@ -49,16 +64,28 @@ func GetCity(w http.ResponseWriter, r *http.Request) {
 }
 
 func CreateCity(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
 	var city City
 	_ = json.NewDecoder(r.Body).Decode(&city)
-	city.ID = params["id"]
 	cities = append(cities, city)
 
-	json.NewEncoder(w).Encode(city)
+	w.WriteHeader(http.StatusOk)
+	json.NewEncoder(w).Encode(cities)
 }
 
 // Todo
 func DeleteCity(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	for index, city := range cities {
+		if city.ID == params["id"] {
+			cities[index] = cities[len(cities)-1]
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(cities)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(cities)
 
 }
