@@ -78,7 +78,7 @@ func DeleteCity(w http.ResponseWriter, r *http.Request) {
 
 	for index, city := range cities {
 		if city.ID == params["id"] {
-			cities[index] = cities[len(cities)-1]
+			cities = cities[:index+copy(cities[index:], cities[index+1:])]
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(cities)
 			return
@@ -91,13 +91,12 @@ func DeleteCity(w http.ResponseWriter, r *http.Request) {
 
 func EditCity(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	var city City
-	_ = json.NewDecoder(r.Body).Decode(&city)
+	var city2 City
+	_ = json.NewDecoder(r.Body).Decode(&city2)
 
 	for index, city := range cities {
 		if city.ID == params["id"] {
-			cities[index] = cities[len(cities)-1]
-			cities = append(cities, city)
+			cities[index] = city2
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(cities)
 			return
