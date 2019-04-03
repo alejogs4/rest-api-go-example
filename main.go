@@ -40,6 +40,7 @@ func main() {
 	router.HandleFunc("/cities/{id}", GetCity).Methods("GET")
 	router.HandleFunc("/cities", CreateCity).Methods("POST")
 	router.HandleFunc("/cities/{id}", DeleteCity).Methods("DELETE")
+	router.HandleFunc("/cities/{id}", EditCity).Methods("PUT")
 
 	log.Print("Probando")
 	http.ListenAndServe(":8000", router)
@@ -67,8 +68,7 @@ func CreateCity(w http.ResponseWriter, r *http.Request) {
 	var city City
 	_ = json.NewDecoder(r.Body).Decode(&city)
 	cities = append(cities, city)
-
-	w.WriteHeader(http.StatusOk)
+	//w.WriteHeader(http.StatusOk)
 	json.NewEncoder(w).Encode(cities)
 }
 
@@ -87,5 +87,23 @@ func DeleteCity(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNotFound)
 	json.NewEncoder(w).Encode(cities)
+}
 
+func EditCity(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var city City
+	_ = json.NewDecoder(r.Body).Decode(&city)
+
+	for index, city := range cities {
+		if city.ID == params["id"] {
+			cities[index] = cities[len(cities)-1]
+			cities = append(cities, city)
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(cities)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	json.NewEncoder(w).Encode(cities)
 }
